@@ -1,0 +1,280 @@
+<!--
+Copyright 2018 Next Century Corporation
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+
+<link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="../neon-animation/web-animations.html">
+<link rel="import" href="../paper-dropdown-menu/paper-dropdown-menu.html">
+<link rel="import" href="../paper-item/paper-item.html">
+<link rel="import" href="../paper-listbox/paper-listbox.html">
+
+<!--
+A Polymer Element showing a stylized dropdown menu.
+
+### Example
+```js
+var data = [{
+  title: 'Choice 1',
+  value: '1'
+}, {
+  title: 'Choice 2',
+  value: '2'
+}];
+```
+
+```html
+<dropdown-menu
+  data="[[data]]"
+  empty-item-title="No Choice"
+  label="Choices"
+  selected="{{selected}}">
+</dropdown-menu>
+```
+
+### Styling
+
+`<dropdown-menu>` provides the following custom properties and mixins for styling:
+
+Custom property         | Description                                                      | Default
+------------------------|------------------------------------------------------------------|--------
+`--dropdown-menu-mixin` | The custom style mixin for the dropdown menu.                    | none
+`--dropdown-menu-width` | The width for the dropdown menu.  Overrides `large` and `small`. | 120px
+
+@demo demo/index.html
+-->
+
+<dom-module id="dropdown-menu">
+  <template>
+    <style>
+      :host {
+        display: block;
+      }
+
+      paper-dropdown-menu {
+        padding-top: 1px;
+        --paper-input-container: {
+          padding: 0;
+          width: var(--dropdown-menu-width, 120px);
+        };
+        --paper-input-container-input: {
+          display: block;
+          height: 20px;
+          line-height: 20px;
+          padding: 1px 0;
+        };
+        --paper-input-container-label: {
+          height: 20px;
+          line-height: 20px;
+        };
+        --paper-input-suffix: {
+          height: 20px;
+          width: 20px;
+          padding-bottom: 2px;
+        };
+        @apply --dropdown-menu-mixin;
+      }
+
+      paper-listbox {
+        --paper-listbox: {
+          padding: 0;
+        };
+      }
+
+      paper-item {
+        --paper-item-min-height: 30px;
+        --paper-item: {
+          cursor: pointer;
+          padding: 0 10px;
+          white-space: nowrap;
+        };
+      }
+
+      paper-dropdown-menu.large {
+        --paper-input-container: {
+          padding: 0;
+          width: var(--dropdown-menu-width, 150px);
+        };
+      }
+
+      paper-dropdown-menu.small {
+        --paper-input-container: {
+          padding: 0;
+          width: var(--dropdown-menu-width, 80px);
+        };
+      }
+    </style>
+
+    <paper-dropdown-menu class$="[[_getStyleClass(large, small)]]" label="[[label]]" no-label-float="[[noLabelFloat]]">
+      <paper-listbox slot="dropdown-content" attr-for-selected="value" selected="{{selected}}">
+        <template is="dom-if" if="[[emptyItemTitle]]">
+          <paper-item value="">[[emptyItemTitle]]</paper-item>
+        </template>
+        <template is="dom-repeat" items="[[data]]">
+          <paper-item id$="[[_getProperty(item, valueProperty)]]" value="[[_getProperty(item, valueProperty)]]">[[_getProperty(item, titleProperty)]]</paper-item>
+        </template>
+      </paper-listbox>
+    </paper-dropdown-menu>
+  </template>
+
+  <script>
+  (function() {
+    'use strict';
+
+    Polymer({
+      is: 'dropdown-menu',
+
+      properties: {
+        /**
+         * (Required)
+         *
+         * The list of data objects to show in the menu.
+         *
+         * @type {Array}
+         */
+        data: {
+          type: Array
+        },
+
+        /**
+         * (Optional)
+         *
+         * The title for the empty item.  Will only create an empty item if the title is non-empty.
+         *
+         * @type {String}
+         * @default ''
+         */
+        emptyItemTitle: {
+          type: String,
+          value: ''
+        },
+
+        /**
+         * (Optional)
+         *
+         * The dropdown menu label.
+         *
+         * @type {String}
+         * @default ''
+         */
+        label: {
+          type: String,
+          value: ''
+        },
+
+        /**
+         * (Optional)
+         *
+         * Whether the dropdown menu is large width (overrides `small`).
+         *
+         * @type {Boolean}
+         * @default false
+         */
+        large: {
+          type: Boolean,
+          value: false
+        },
+
+        /**
+         * (Optional)
+         *
+         * Whether to not float the dropdown menu label.
+         *
+         * @type {Boolean}
+         * @default false
+         */
+        noLabelFloat: {
+          type: Boolean,
+          value: false
+        },
+
+        /**
+         * (Optional|Output)
+         *
+         * The selected object.
+         *
+         * @type {Object}
+         */
+        selected: {
+          notify: true,
+          type: Object
+        },
+
+        /**
+         * (Optional)
+         *
+         * Whether the dropdown menu is small width.
+         *
+         * @type {Boolean}
+         * @default false
+         */
+        small: {
+          type: Boolean,
+          value: false
+        },
+
+        /**
+         * (Optional)
+         *
+         * The property for the title in the data objects.
+         *
+         * @type {String}
+         * @default 'title'
+         */
+        titleProperty: {
+          type: String,
+          value: 'title'
+        },
+
+        /**
+         * (Optional)
+         *
+         * The property for the value in the data objects.
+         *
+         * @type {String}
+         * @default 'value'
+         */
+        valueProperty: {
+          type: String,
+          value: 'value'
+        }
+      },
+
+      /**
+       * Returns the object in the given item at the given property.
+       *
+       * @param {Object} item
+       * @param {String} property
+       * @return {Object}
+       * @private
+       */
+      _getProperty: function(item, property) {
+        return item ? item[property] : undefined;
+      },
+
+      /**
+       * Returns the style class for the dropdown menu.
+       *
+       * @param {Boolean} large
+       * @param {Boolean} small
+       * @return {String}
+       * @private
+       */
+      _getStyleClass: function(large, small) {
+        return large ? 'large' : (small ? 'small' : '');
+      }
+    });
+  })();
+  </script>
+</dom-module>

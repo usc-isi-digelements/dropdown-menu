@@ -1,0 +1,206 @@
+<!--
+Copyright 2017 Next Century Corporation
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, minimum-scale=1.0, initial-scale=1.0, user-scalable=yes">
+  <script src="../../webcomponentsjs/webcomponents-lite.js"></script>
+  <script src="../../web-component-tester/browser.js"></script>
+  <link rel="import" href="../dropdown-menu.html">
+</head>
+
+<body>
+  <test-fixture id="dropdown-menu-fixture">
+    <template>
+      <dropdown-menu></dropdown-menu>
+    </template>
+  </test-fixture>
+
+  <script>
+    suite('dropdown-menu tests', function() {
+      var element;
+
+      setup(function(done) {
+        element = fixture('dropdown-menu-fixture');
+        flush(done);
+      });
+
+      test('properties are set as expected', function() {
+        expect(element.data).to.be.undefined;
+        expect(element.emptyItemTitle).to.equal('');
+        expect(element.label).to.equal('');
+        expect(element.large).to.be.false;
+        expect(element.noLabelFloat).to.be.false;
+        expect(element.selected).to.be.undefined;
+        expect(element.small).to.be.false;
+        expect(element.titleProperty).to.equal('title');
+        expect(element.valueProperty).to.equal('value');
+      });
+
+      test('does show dropdown menu and list', function() {
+        var menu = element.$$('paper-dropdown-menu');
+        expect(menu).to.exist;
+        expect(menu.label).to.equal('');
+        expect(menu.noLabelFloat).to.be.false;
+
+        var list = element.$$('paper-listbox');
+        expect(list).to.exist;
+      });
+
+      test('properties do update dropdown menu', function(done) {
+        element.large = true;
+        element.label = 'Test Label';
+        element.noLabelFloat = true;
+
+        flush(function() {
+          var menu = element.$$('paper-dropdown-menu');
+          expect(menu).to.exist;
+          expect(menu.classList.contains('large')).to.be.true;
+          expect(menu.label).to.equal('Test Label');
+          expect(menu.noLabelFloat).to.be.true;
+          done();
+        });
+      });
+
+      test('does not show any items because data is undefined', function() {
+        var items = Polymer.dom(element.root).querySelectorAll('paper-item');
+        expect(items.length).to.equal(0);
+      });
+
+      test('does show empty item if emptyItemTitle is defined', function(done) {
+        element.emptyItemTitle = 'N/A';
+
+        flush(function() {
+          var items = Polymer.dom(element.root).querySelectorAll('paper-item');
+          expect(items.length).to.equal(1);
+          expect(items[0].value).to.be.undefined;
+          expect(items[0].innerHTML).to.equal('N/A');
+          done();
+        });
+      });
+
+      test('does show items if data is defined', function(done) {
+        element.data = [{
+          title: 'One',
+          value: '1'
+        }, {
+          title: 'Two',
+          value: '2'
+        }];
+
+        flush(function() {
+          var items = Polymer.dom(element.root).querySelectorAll('paper-item');
+          expect(items.length).to.equal(2);
+          expect(items[0].id).to.equal('1');
+          expect(items[0].value).to.equal('1');
+          expect(items[0].innerHTML).to.equal('One');
+          expect(items[1].id).to.equal('2');
+          expect(items[1].value).to.equal('2');
+          expect(items[1].innerHTML).to.equal('Two');
+          done();
+        });
+      });
+
+      test('does show items if emptyItemTitle and data are both defined', function(done) {
+        element.data = [{
+          title: 'One',
+          value: '1'
+        }, {
+          title: 'Two',
+          value: '2'
+        }];
+        element.emptyItemTitle = 'N/A';
+
+        flush(function() {
+          var items = Polymer.dom(element.root).querySelectorAll('paper-item');
+          expect(items.length).to.equal(3);
+          expect(items[0].value).to.be.undefined;
+          expect(items[0].innerHTML).to.equal('N/A');
+          expect(items[1].id).to.equal('1');
+          expect(items[1].value).to.equal('1');
+          expect(items[1].innerHTML).to.equal('One');
+          expect(items[2].id).to.equal('2');
+          expect(items[2].value).to.equal('2');
+          expect(items[2].innerHTML).to.equal('Two');
+          done();
+        });
+      });
+
+      test('does use titleProperty and valueProperty', function(done) {
+        element.titleProperty = 'testTitle';
+        element.valueProperty = 'testValue';
+        element.data = [{
+          testTitle: 'One',
+          testValue: '1'
+        }, {
+          testTitle: 'Two',
+          testValue: '2'
+        }];
+
+        flush(function() {
+          var items = Polymer.dom(element.root).querySelectorAll('paper-item');
+          expect(items.length).to.equal(2);
+          expect(items[0].id).to.equal('1');
+          expect(items[0].value).to.equal('1');
+          expect(items[0].innerHTML).to.equal('One');
+          expect(items[1].id).to.equal('2');
+          expect(items[1].value).to.equal('2');
+          expect(items[1].innerHTML).to.equal('Two');
+          done();
+        });
+      });
+
+      test('_getProperty does return as expected', function() {
+        expect(element._getProperty).to.be.a('Function');
+        expect(element._getProperty({}, 'property')).to.not.exist;
+        expect(element._getProperty({
+          property: 'text'
+        }, 'notproperty')).to.not.exist;
+        expect(element._getProperty({
+          notproperty: 'text'
+        }, 'property')).to.not.exist;
+        expect(element._getProperty({
+          property: 'text'
+        }, 'property')).to.equal('text');
+        expect(element._getProperty({
+          property: 10
+        }, 'property')).to.equal(10);
+        expect(element._getProperty({
+          property: true
+        }, 'property')).to.be.true;
+        expect(element._getProperty({
+          property: [1, 2, 3, 4, 5]
+        }, 'property')).to.deep.equal([1, 2, 3, 4, 5]);
+        expect(element._getProperty({
+          property: {
+            key: 'value'
+          }
+        }, 'property')).to.deep.equal({
+          key: 'value'
+        });
+      });
+
+      test('_getStyleClass does return as expected', function() {
+        expect(element._getStyleClass(false, false)).to.equal('');
+        expect(element._getStyleClass(false, true)).to.equal('small');
+        expect(element._getStyleClass(true, false)).to.equal('large');
+        expect(element._getStyleClass(true, true)).to.equal('large');
+      });
+    });
+  </script>
+</body>
+</html>
