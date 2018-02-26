@@ -1,7 +1,7 @@
 {
   "name": "dropdown-menu",
   "description": "A Polymer Element showing a stylized dropdown menu.",
-  "version": "2.0.0",
+  "version": "2.0.1",
   "authors": ["Next Century Corporation"],
   "license": "Apache-2.0",
   "keywords": [
